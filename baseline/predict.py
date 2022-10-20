@@ -150,7 +150,7 @@ def main():
             # convert probability map to binary mask and apply morphological postprocessing
             test_pred_mask = measure.label(
                 morphology.remove_small_objects(
-                    morphology.remove_small_holes(test_pred_npy > 0.5), 16
+                    morphology.remove_small_holes(test_pred_npy > 0.5), 10
                 )
             )
             tif.imwrite(
