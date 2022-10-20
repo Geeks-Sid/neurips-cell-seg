@@ -2,14 +2,16 @@ import os
 
 join = os.path.join
 import argparse
-import numpy as np
-import torch
-import monai
-from monai.inferers import sliding_window_inference
-from baseline.models.unetr2d import UNETR2D
 import time
-from skimage import io, segmentation, morphology, measure, exposure
+
+import monai
+import numpy as np
 import tifffile as tif
+import torch
+from monai.inferers import sliding_window_inference
+from skimage import exposure, io, measure, morphology, segmentation
+
+from baseline.models.unetr2d import UNETR2D
 
 
 def normalize_channel(img, lower=1, upper=99):

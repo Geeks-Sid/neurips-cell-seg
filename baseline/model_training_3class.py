@@ -9,42 +9,41 @@ import os
 
 join = os.path.join
 
-import numpy as np
-import torch
-from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
+import shutil
+from datetime import datetime
 
+import matplotlib.pyplot as plt
 import monai
-from monai.data import decollate_batch, PILReader
+import numpy as np
+import segmentation_models_pytorch as smp
+import torch
+from monai.data import PILReader, decollate_batch
 from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
 from monai.transforms import (
     Activations,
-    AsChannelFirstd,
     AddChanneld,
+    AsChannelFirstd,
     AsDiscrete,
     Compose,
-    LoadImaged,
-    SpatialPadd,
-    RandSpatialCropd,
-    RandRotate90d,
-    ScaleIntensityd,
-    RandAxisFlipd,
-    RandZoomd,
-    RandGaussianNoised,
-    RandAdjustContrastd,
-    RandGaussianSmoothd,
-    RandHistogramShiftd,
-    EnsureTyped,
     EnsureType,
+    EnsureTyped,
+    LoadImaged,
+    RandAdjustContrastd,
+    RandAxisFlipd,
+    RandGaussianNoised,
+    RandGaussianSmoothd,
+    RandRotate90d,
+    RandSpatialCropd,
+    RandZoomd,
+    ScaleIntensityd,
+    SpatialPadd,
 )
 from monai.visualize import plot_2d_or_3d_image
-import matplotlib.pyplot as plt
-from datetime import datetime
-import shutil
+from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 
 from baseline.models.unetr2d import UNETR2D
-import segmentation_models_pytorch as smp
 
 print("Successfully imported all requirements!")
 

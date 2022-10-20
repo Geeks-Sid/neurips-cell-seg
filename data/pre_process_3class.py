@@ -15,9 +15,9 @@ import os
 join = os.path.join
 import argparse
 
-from skimage import io, segmentation, morphology, exposure
 import numpy as np
 import tifffile as tif
+from skimage import exposure, io, morphology, segmentation
 from tqdm import tqdm
 
 
