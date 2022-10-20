@@ -20,7 +20,7 @@ import numpy as np
 import tifffile as tif
 from skimage import exposure, io, morphology, segmentation
 from tqdm import tqdm
-from multiprocessing import pool
+from multiprocessing import Pool
 
 
 def normalize_channel(img, lower=1, upper=99):
@@ -153,7 +153,7 @@ def main():
     os.makedirs(pre_img_path, exist_ok=True)
     os.makedirs(pre_gt_path, exist_ok=True)
 
-    pool = pool.Pool(num_workers)
+    pool = Pool(num_workers)
     pool.map(batch_works, range(num_workers))
     pool.close()
 
