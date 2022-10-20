@@ -144,7 +144,7 @@ def main():
     img_path = join(source_path, "images")
     gt_path = join(source_path, "labels")
 
-    img_names = sorted(os.listdir(img_path))
+    image_names = sorted(os.listdir(img_path))
     gt_names = [img_name.split(".")[0] + "_label.tiff" for img_name in img_names]
 
     pre_img_path = join(target_path, "images")
