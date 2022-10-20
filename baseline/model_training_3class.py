@@ -44,6 +44,7 @@ from datetime import datetime
 import shutil
 
 from baseline.models.unetr2d import UNETR2D
+import segmentation_models_pytorch as smp
 
 print("Successfully imported all requirements!")
 
@@ -230,6 +231,9 @@ def main():
             feature_size=24,  # should be divisible by 12
             spatial_dims=2,
         ).to(device)
+    
+    if args.model_name.lower() == "resunet":
+        model = smp.Unet(encoder_name="resnet50", classes=args.num_class)
 
     loss_function = monai.losses.DiceCELoss(softmax=True)
     initial_lr = args.initial_lr
