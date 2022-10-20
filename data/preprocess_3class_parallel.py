@@ -11,7 +11,6 @@ convert instance labels to three class labels:
 """
 
 import os
-from tkinter import image_names
 
 join = os.path.join
 import argparse
