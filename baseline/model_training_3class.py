@@ -141,7 +141,6 @@ def main():
             RandGaussianNoised(keys=["img"], prob=0.25, mean=0, std=0.1),
             RandAdjustContrastd(keys=["img"], prob=0.25, gamma=(1, 2)),
             RandGaussianSmoothd(keys=["img"], prob=0.25, sigma_x=(1, 2)),
-            RandHistogramShiftd(keys=["img"], prob=0.25, num_control_points=3),
             RandZoomd(
                 keys=["img", "label"],
                 prob=0.15,
