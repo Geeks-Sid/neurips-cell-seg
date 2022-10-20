@@ -20,6 +20,9 @@ import tifffile as tif
 from skimage import exposure, io, morphology, segmentation
 from tqdm import tqdm
 from multiprocessing import Pool
+import multiprocessing
+
+manager = multiprocessing.Manager()
 
 
 def normalize_channel(img, lower=1, upper=99):
@@ -144,7 +147,7 @@ def main():
     img_path = join(source_path, "images")
     gt_path = join(source_path, "labels")
 
-    image_names = sorted(os.listdir(img_path))
+    image_names = manager.list(sorted(os.listdir(img_path)))
     print("number of images: ", len(image_names))
     print("names of images: ", image_names)
     gt_names = [img_name.split(".")[0] + "_label.tiff" for img_name in image_names]
@@ -154,7 +157,7 @@ def main():
     os.makedirs(pre_img_path, exist_ok=True)
     os.makedirs(pre_gt_path, exist_ok=True)
 
-    pool = Pool(num_workers)
+    pool = Pool(processes=num_workers)
     pool.map(batch_works, range(num_workers))
     pool.close()
 
