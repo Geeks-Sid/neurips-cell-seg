@@ -22,8 +22,7 @@ from monai.inferers import sliding_window_inference
 from monai.metrics import DiceMetric
 from monai.transforms import (
     Activations,
-    AddChanneld,
-    AsChannelFirstd,
+    EnsureChannelFirst,
     AsDiscrete,
     Compose,
     EnsureType,
@@ -85,7 +84,6 @@ def main():
 
     monai.config.print_config()
 
-    #%% set training/validation split
     np.random.seed(args.seed)
     model_path = join(args.work_dir, args.model_name + "_3class")
     os.makedirs(model_path, exist_ok=True)
@@ -96,6 +94,7 @@ def main():
     img_path = join(args.data_path, "images")
     gt_path = join(args.data_path, "labels")
 
+    print("*"*20, os.path.exists(img_path))
     img_names = sorted(os.listdir(img_path))
     gt_names = [img_name.split(".")[0] + "_label.png" for img_name in img_names]
     img_num = len(img_names)
@@ -117,14 +116,13 @@ def main():
     print(
         f"training image num: {len(train_files)}, validation image num: {len(val_files)}"
     )
-    #%% define transforms for image and segmentation
     train_transforms = Compose(
         [
             LoadImaged(
                 keys=["img", "label"], reader=PILReader, dtype=np.uint8
             ),  # image three channels (H, W, 3); label: (H, W)
-            AddChanneld(keys=["label"], allow_missing_keys=True),  # label: (1, H, W)
-            AsChannelFirstd(
+            EnsureChannelFirst(keys=["label"], allow_missing_keys=True),  # label: (1, H, W)
+            EnsureChannelFirst(
                 keys=["img"], channel_dim=-1, allow_missing_keys=True
             ),  # image: (3, H, W)
             ScaleIntensityd(
@@ -162,7 +160,6 @@ def main():
         ]
     )
 
-    #% define dataset, data loader
     check_ds = monai.data.Dataset(data=train_files, transform=train_transforms)
     check_loader = DataLoader(check_ds, batch_size=1, num_workers=4)
     check_data = monai.utils.misc.first(check_loader)
@@ -174,7 +171,6 @@ def main():
         torch.max(check_data["label"]),
     )
 
-    #%% create a training data loader
     train_ds = monai.data.Dataset(data=train_files, transform=train_transforms)
     # use batch_size=2 to load images and use RandCropByPosNegLabeld to generate 2 x 4 images for network training
     train_loader = DataLoader(
