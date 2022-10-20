@@ -12,6 +12,7 @@ from monai.inferers import sliding_window_inference
 from skimage import exposure, io, measure, morphology, segmentation
 
 from baseline.models.unetr2d import UNETR2D
+import segmentation_models_pytorch as smp
 
 
 def normalize_channel(img, lower=1, upper=99):
@@ -104,6 +105,12 @@ def main():
             spatial_dims=2,
         ).to(device)
 
+    if args.model_name.lower() == "resunet":
+        model = smp.Unet(encoder_name="resnet50", classes=args.num_class)
+
+    if args.model_name.lower() == "resfpn":
+        model = smp.FPN(encoder_name="resnet50", classes=args.num_class)
+
     checkpoint = torch.load(
         join(args.model_path, "best_Dice_model.pth"), map_location=torch.device(device)
     )
@@ -155,6 +162,7 @@ def main():
                     morphology.remove_small_holes(test_pred_npy > 0.5), 10
                 )
             )
+
             tif.imwrite(
                 join(output_path, img_name.split(".")[0] + "_label.tiff"),
                 test_pred_mask,
