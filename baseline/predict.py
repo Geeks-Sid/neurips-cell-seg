@@ -6,13 +6,14 @@ import time
 
 import monai
 import numpy as np
+import segmentation_models_pytorch as smp
 import tifffile as tif
 import torch
 from monai.inferers import sliding_window_inference
 from skimage import exposure, io, measure, morphology, segmentation
+from skimage.measure import label, regionprops
 
 from baseline.models.unetr2d import UNETR2D
-import segmentation_models_pytorch as smp
 
 
 def normalize_channel(img, lower=1, upper=99):
