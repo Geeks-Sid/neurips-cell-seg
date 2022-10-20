@@ -240,7 +240,7 @@ def main():
     if args.model_name.lower() == "resfpn":
         model = smp.FPN(encoder_name="resnet50", classes=args.num_class)
 
-    loss_function = monai.losses.DiceCELoss(softmax=True)
+    loss_function = monai.losses.DiceCELoss(softmax=True, squaredpred=False)
     initial_lr = args.initial_lr
     optimizer = torch.optim.AdamW(model.parameters(), initial_lr)
 
