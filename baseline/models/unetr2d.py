@@ -14,6 +14,7 @@ from monai.networks.blocks.dynunet_block import UnetOutBlock
 from monai.networks.blocks import UnetrBasicBlock, UnetrPrUpBlock, UnetrUpBlock
 from monai.networks.nets import ViT
 
+
 class UNETR2D(nn.Module):
     """
     UNETR based on: "Hatamizadeh et al.,
@@ -34,7 +35,7 @@ class UNETR2D(nn.Module):
         conv_block: bool = False,
         res_block: bool = True,
         dropout_rate: float = 0.0,
-        debug: bool = False
+        debug: bool = False,
     ) -> None:
 
         super().__init__()
@@ -46,11 +47,15 @@ class UNETR2D(nn.Module):
             raise AssertionError("hidden size should be divisible by num_heads.")
 
         if pos_embed not in ["conv", "perceptron"]:
-            raise KeyError(f"Position embedding layer of type {pos_embed} is not supported.")
+            raise KeyError(
+                f"Position embedding layer of type {pos_embed} is not supported."
+            )
 
         self.num_layers = 12
         self.patch_size = (16, 16)
-        self.feat_size = tuple(img_d // p_d for img_d, p_d in zip(img_size, self.patch_size))
+        self.feat_size = tuple(
+            img_d // p_d for img_d, p_d in zip(img_size, self.patch_size)
+        )
         self.hidden_size = hidden_size
         self.classification = False
         self.debug = debug
@@ -65,7 +70,7 @@ class UNETR2D(nn.Module):
             pos_embed=pos_embed,
             classification=self.classification,
             dropout_rate=dropout_rate,
-            spatial_dims=2
+            spatial_dims=2,
         )
         self.encoder1 = UnetrBasicBlock(
             spatial_dims=2,
@@ -150,33 +155,58 @@ class UNETR2D(nn.Module):
         )
         self.out = UnetOutBlock(spatial_dims=2, in_channels=feature_size, out_channels=out_channels)  # type: ignore
 
-    def proj_feat(self, x, hidden_size, feat_size): # x: (B, 256, 768)
-        x = x.view(x.size(0), feat_size[0], feat_size[1], hidden_size) # (B, 16, 16, 768)
-        x = x.permute(0, 3, 1, 2).contiguous() # (B, 768, 16, 16)
+    def proj_feat(self, x, hidden_size, feat_size):  # x: (B, 256, 768)
+        x = x.view(
+            x.size(0), feat_size[0], feat_size[1], hidden_size
+        )  # (B, 16, 16, 768)
+        x = x.permute(0, 3, 1, 2).contiguous()  # (B, 768, 16, 16)
         return x
 
     def forward(self, x_in):
-        x, hidden_states_out = self.vit(x_in) # x: (B, 256,768), hidden_states_out: list, 12 elements, (B,256,768)
-        enc1 = self.encoder1(x_in) # (1, 16, 256, 256)
-        x2 = hidden_states_out[3] # (B, 256, 768)
+        x, hidden_states_out = self.vit(
+            x_in
+        )  # x: (B, 256,768), hidden_states_out: list, 12 elements, (B,256,768)
+        enc1 = self.encoder1(x_in)  # (1, 16, 256, 256)
+        x2 = hidden_states_out[3]  # (B, 256, 768)
         # self.proj_feat(x2, self.hidden_size, self.feat_size): (B, 768, 16,16) -> enc2: (B,32,128,128)
-        enc2 = self.encoder2(self.proj_feat(x2, self.hidden_size, self.feat_size)) # hidden_size=768, self.feat_size=16
-        x3 = hidden_states_out[6] # (B, 256, 768)
-        enc3 = self.encoder3(self.proj_feat(x3, self.hidden_size, self.feat_size)) #(B, 768, 16,16) -> (B, 64, 64, 64)
-        x4 = hidden_states_out[9] # (B, 256, 768)
-        enc4 = self.encoder4(self.proj_feat(x4, self.hidden_size, self.feat_size)) # (B, 768, 16, 16) -> (B, 128, 32, 32)
-        dec4 = self.proj_feat(x, self.hidden_size, self.feat_size) # (B, 768, 16, 16)
-        dec3 = self.decoder5(dec4, enc4) # up -> cat -> ResConv; (B, 128, 32, 32)
-        dec2 = self.decoder4(dec3, enc3) # (B, 64, 64, 64)
-        dec1 = self.decoder3(dec2, enc2) # (B, 32, 128, 128)
-        out = self.decoder2(dec1, enc1) # (B, 16, 256, 256)
+        enc2 = self.encoder2(
+            self.proj_feat(x2, self.hidden_size, self.feat_size)
+        )  # hidden_size=768, self.feat_size=16
+        x3 = hidden_states_out[6]  # (B, 256, 768)
+        enc3 = self.encoder3(
+            self.proj_feat(x3, self.hidden_size, self.feat_size)
+        )  # (B, 768, 16,16) -> (B, 64, 64, 64)
+        x4 = hidden_states_out[9]  # (B, 256, 768)
+        enc4 = self.encoder4(
+            self.proj_feat(x4, self.hidden_size, self.feat_size)
+        )  # (B, 768, 16, 16) -> (B, 128, 32, 32)
+        dec4 = self.proj_feat(x, self.hidden_size, self.feat_size)  # (B, 768, 16, 16)
+        dec3 = self.decoder5(dec4, enc4)  # up -> cat -> ResConv; (B, 128, 32, 32)
+        dec2 = self.decoder4(dec3, enc3)  # (B, 64, 64, 64)
+        dec1 = self.decoder3(dec2, enc2)  # (B, 32, 128, 128)
+        out = self.decoder2(dec1, enc1)  # (B, 16, 256, 256)
         logits = self.out(out)
-        
+
         if self.debug:
-            return x, x2, x3,x4, hidden_states_out, enc1, enc2, enc3, enc4, dec4, dec3, dec2, dec1, logits 
+            return (
+                x,
+                x2,
+                x3,
+                x4,
+                hidden_states_out,
+                enc1,
+                enc2,
+                enc3,
+                enc4,
+                dec4,
+                dec3,
+                dec2,
+                dec1,
+                logits,
+            )
         else:
             return logits
-    
+
 
 # model = UNETR2D(
 #     in_channels=3, # 3 channels, R,G,B
@@ -200,8 +230,4 @@ class UNETR2D(nn.Module):
 
 # x = torch.rand((1,3,256,256)).cuda()
 # x, x2, x3,x4, hidden_states_out, enc1, enc2, enc3, enc4, dec4, dec3, dec2, dec1, logits  = model(x)
-# print(logits.shape) # torch.Size([1, 3, 256, 256]) 
-
-
-
-
+# print(logits.shape) # torch.Size([1, 3, 256, 256])

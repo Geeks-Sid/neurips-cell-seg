@@ -59,7 +59,9 @@ def main():
         help="training data path; subfolders: images, labels",
     )
     parser.add_argument(
-        "--work_dir", default="./baseline/work_dir", help="path where to save models and logs"
+        "--work_dir",
+        default="./baseline/work_dir",
+        help="path where to save models and logs",
     )
     parser.add_argument("--seed", default=2022, type=int)
     # parser.add_argument("--resume", default=False, help="resume from checkpoint")
@@ -231,7 +233,7 @@ def main():
             feature_size=24,  # should be divisible by 12
             spatial_dims=2,
         ).to(device)
-    
+
     if args.model_name.lower() == "resunet":
         model = smp.Unet(encoder_name="resnet50", classes=args.num_class)
 
