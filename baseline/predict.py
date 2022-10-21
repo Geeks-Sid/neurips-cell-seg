@@ -133,10 +133,10 @@ def main():
         ).to(device)
 
     if args.model_name.lower() == "resunet":
-        model = smp.Unet(encoder_name="resnet50", classes=args.num_class)
+        model = smp.Unet(encoder_name="resnet50", classes=args.num_class).to(device)
 
     if args.model_name.lower() == "resfpn":
-        model = smp.FPN(encoder_name="resnet50", classes=args.num_class)
+        model = smp.FPN(encoder_name="resnet50", classes=args.num_class).to(device)
 
     checkpoint = torch.load(
         join(args.model_path, "best_Dice_model.pth"), map_location=torch.device(device)
@@ -211,6 +211,7 @@ def main():
                     img_data,
                     check_contrast=False,
                 )
+
 
 if __name__ == "__main__":
     main()
