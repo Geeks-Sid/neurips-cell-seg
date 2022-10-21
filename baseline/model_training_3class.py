@@ -94,7 +94,7 @@ def main():
     img_path = join(args.data_path, "images")
     gt_path = join(args.data_path, "labels")
 
-    print("*"*20, os.path.exists(img_path))
+    print("*" * 20, os.path.exists(img_path))
     img_names = sorted(os.listdir(img_path))
     gt_names = [img_name.split(".")[0] + "_label.png" for img_name in img_names]
     img_num = len(img_names)
@@ -121,7 +121,9 @@ def main():
             LoadImaged(
                 keys=["img", "label"], reader=PILReader, dtype=np.uint8
             ),  # image three channels (H, W, 3); label: (H, W)
-            EnsureChannelFirst(keys=["label"], allow_missing_keys=True),  # label: (1, H, W)
+            EnsureChannelFirst(
+                keys=["label"], allow_missing_keys=True
+            ),  # label: (1, H, W)
             EnsureChannelFirst(
                 keys=["img"], channel_dim=-1, allow_missing_keys=True
             ),  # image: (3, H, W)
@@ -152,8 +154,8 @@ def main():
     val_transforms = Compose(
         [
             LoadImaged(keys=["img", "label"], reader=PILReader, dtype=np.uint8),
-            AddChanneld(keys=["label"], allow_missing_keys=True),
-            AsChannelFirstd(keys=["img"], channel_dim=-1, allow_missing_keys=True),
+            EnsureChannelFirst(keys=["label"], allow_missing_keys=True),
+            EnsureChannelFirst(keys=["img"], channel_dim=-1, allow_missing_keys=True),
             ScaleIntensityd(keys=["img"], allow_missing_keys=True),
             # AsDiscreted(keys=['label'], to_onehot=3),
             EnsureTyped(keys=["img", "label"]),
@@ -298,13 +300,6 @@ def main():
                     val_labels_onehot = [
                         post_gt(i) for i in decollate_batch(val_labels_onehot)
                     ]
-                    # compute metric for current iteration
-                    print(
-                        os.path.basename(
-                            val_data["img_meta_dict"]["filename_or_obj"][0]
-                        ),
-                        dice_metric(y_pred=val_outputs, y=val_labels_onehot),
-                    )
 
                 # aggregate the final mean dice result
                 metric = dice_metric.aggregate().item()

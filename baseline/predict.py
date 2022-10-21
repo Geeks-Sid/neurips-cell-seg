@@ -28,6 +28,32 @@ def normalize_channel(img, lower=1, upper=99):
     return img_norm.astype(np.uint8)
 
 
+def tta_augmentation(img, mode="flip"):
+    if mode == "flip":
+        img = np.flip(img, axis=0)
+        img = np.flip(img, axis=1)
+    elif mode == "rotate":
+        img = np.rot90(img, axes=(1, 2))
+    elif mode == "flip_rotate":
+        img = np.flip(img, axis=0)
+        img = np.flip(img, axis=1)
+        img = np.rot90(img, axes=(1, 2))
+    return img
+
+
+def rev_tta_augmentation(img, mode="flip"):
+    if mode == "flip":
+        img = np.flip(img, axis=0)
+        img = np.flip(img, axis=1)
+    elif mode == "rotate":
+        img = np.rot90(img, k=3, axes=(1, 2))
+    elif mode == "flip_rotate":
+        img = np.rot90(img, k=3, axes=(1, 2))
+        img = np.flip(img, axis=0)
+        img = np.flip(img, axis=1)
+    return img
+
+
 def main():
     parser = argparse.ArgumentParser(
         "Baseline for Microscopy image segmentation", add_help=False
@@ -185,7 +211,6 @@ def main():
                     img_data,
                     check_contrast=False,
                 )
-
 
 if __name__ == "__main__":
     main()
